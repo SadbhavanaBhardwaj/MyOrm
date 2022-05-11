@@ -76,24 +76,6 @@ class EmailField(OrmFields):
 class ModelBase(type): ...
     
 
-class QuerySet:
-    def __init__(self, df, cls):
-        self.df = df
-        self.cls = cls
-
-    def obj_filter(self, **kwargs):
-        #filtered_query = self.df['age']==25
-        # filtered_query = filtered_query.reset_index(drop=True)
-        # print(type(filtered_query))
-        query_string= ""
-        for key, val in kwargs.items():
-            if type(val) == str:
-                query_string += key+"=='"+val+"' and "
-            else:
-                query_string += key+"=="+str(val) + " and "
-        query_string += "True"
-        df2 = self.df.query(query_string)
-        return df2
 
 class Model(metaclass=ModelBase):
 
@@ -183,13 +165,8 @@ class Model(metaclass=ModelBase):
         
         fields_names = [i[0] for i in cls.cursor.description]
         data = [dict(zip(fields_names, row))  for row in ans]
-        # for row in data:
-        #     a = cls.__new__(cls)
-        #     print(a.__init__(row))
-        # print(objs)
-        df = DataFrame(ans, columns=fields_names)
-        q = QuerySet(df, cls.table_name)
-        return q
+       
+        return data
 
     
 
