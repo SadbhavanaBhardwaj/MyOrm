@@ -79,6 +79,15 @@ class QuerySet:
     def __init__(self, df, cls):
         self.df = df
         self.cls = cls
+        self.i = 0
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.i > 0:
+            raise StopIteration()
+        self.i += 1
+        return self
 
     def obj_filter(self, **kwargs):
         #filtered_query = self.df['age']==25
@@ -96,10 +105,13 @@ class QuerySet:
 
 class Model(metaclass=ModelBase):
 
+    #class_attributes: to store all the Field types that belong to the base class(Model)
     class_attributes = {}
+    table_name = ""
     def __init__(self, *args, **kwargs):
         self.attributes = dict()
-        
+        #for every field that belongs to the class,if it is present in the kwargs(while creating objects),
+        #  then initialize that FieldType
         for key, val in self.class_attributes.items():
             if key in kwargs:
                 if val[0] == CharField:
@@ -117,20 +129,15 @@ class Model(metaclass=ModelBase):
             error_string = error_string[:-2]
             raise ValidationError(error_string+ " is/ are not accepted by table")
         self.df = DataFrame()
-
-
-    table_name = ""
-    # manager_class = BaseManager
     
-    # def _get_manager(cls):
-    #     return cls.manager_class(model_class=cls)
-
-    # @property
-    # def objects(cls):
-    #     return cls._get_manager()
-
     
 
+
+    """
+    create_table: 
+        input_params: cursor
+        creates a table with the provided class name, if doesn't exists
+    """
     @classmethod
     def create_table(cls, cursor):
         print(" create table ")
@@ -153,6 +160,9 @@ class Model(metaclass=ModelBase):
         cursor.execute(sql)
 
 
+    """
+    save: it inserts the data of the object in db on which it is called
+    """
     def save(self, *args, **kwargs):
         attributes = "("
         values = ""
@@ -178,45 +188,26 @@ class Model(metaclass=ModelBase):
         conditional_statement += ";"
         select_sql += conditional_statement
         cls.cursor.execute(select_sql)
-        ans = cls.cursor.fetchall()
-        objs = []
-        # klass = globals()[cls.__name__]
-        # instance = klass()
-        
-        fields_names = [i[0] for i in cls.cursor.description]
-        data = [dict(zip(fields_names, row))  for row in ans]
-        # for row in data:
-        #     a = cls.__new__(cls)
-        #     print(a.__init__(row))
-        # print(objs)
-        df = DataFrame(ans, columns=fields_names)
-        q = QuerySet(df, cls.table_name)
-        return q
+        def fetch_records():
+                
+            ans = cls.cursor.fetchall()
+            objs = []
+            # klass = globals()[cls.__name__]
+            # instance = klass()
+            
+            fields_names = [i[0] for i in cls.cursor.description]
+            data = [dict(zip(fields_names, row))  for row in ans]
+            # for row in data:
+            #     a = cls.__new__(cls)
+            #     print(a.__init__(row))
+            # print(objs)
+            df = DataFrame(ans, columns=fields_names)
+            q = QuerySet(df, cls.table_name)
+            return q
+        return fetch_records
 
     
 
     def update(self, **kwargs):
-        pass
-
-class BaseManager:
-
-    def __init__(self, model_class):
-        self.model_class = model_class
-        self.cursor = orm_db.create_db
-
-    def select(self, *field_names):
-        query = f"SELECT * FROM {self.model_class.table_name}"
-
-        # Execute query
-        self.model_class.table_name
-        self.cursor.execute(query)
-
-    def bulk_insert(self, rows: list):
-        pass
-
-    def update(self, new_data: dict):
-        pass
-
-    def delete(self):
         pass
 

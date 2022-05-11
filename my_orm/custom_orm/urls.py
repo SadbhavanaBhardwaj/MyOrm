@@ -1,6 +1,6 @@
 from django.urls import path
-from custom_orm.views import CreateInstanceAPIView
+from custom_orm.views import CreateNewOrm
 
 urlpatterns = [
-    path('dekho/',  CreateInstanceAPIView.as_view()),
+    path('dekho/',  CreateNewOrm.as_view()),
 ]
