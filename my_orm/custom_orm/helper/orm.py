@@ -113,8 +113,9 @@ class Model(metaclass=ModelBase):
         if len(kwargs)>0:
             error_string = ""
             for key in kwargs.keys():
-                error_string += key+" "
-            raise ValidationError(error_string+ "is/ are not accepted by table")
+                error_string += key+", "
+            error_string = error_string[:-2]
+            raise ValidationError(error_string+ " is/ are not accepted by table")
         self.df = DataFrame()
 
 
