@@ -6,6 +6,6 @@ from custom_orm.helper import orm
 
 class CreateInstanceAPIView(APIView):
     def get(self, request):
-        conn = orm.create_db("my_db")
+        conn = orm.create_db("sadbhavana")
         data = {"sad": "bhardwaj"}
         return Response(data)
