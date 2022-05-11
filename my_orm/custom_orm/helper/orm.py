@@ -100,18 +100,19 @@ class Model(metaclass=ModelBase):
     class_attributes = {}
     def __init__(self, *args, **kwargs):
         self.attributes = dict()
-        
         for key, val in self.class_attributes.items():
             if key in kwargs:
                 var_value = val(kwargs[key], )
                 self.attributes[key] = var_value
                 kwargs.pop(key)
+        print(self.attributes)
 
+        #checking if incorrect field names are entered by the user
         if len(kwargs)>0:
             error_string = ""
             for key in kwargs.keys():
                 error_string += key+" "
-            raise ValidationError(error_string+ " is/ are not accepted by {table}".format(self.__class__.table_name))
+            raise ValidationError(error_string+ "is/ are not accepted by table")
         self.df = DataFrame()
 
 
@@ -144,9 +145,9 @@ class Model(metaclass=ModelBase):
         attributes_str =  "("+attributes_str+");"
         sql = "CREATE table IF NOT EXISTS {name} ".format(name=cls.table_name)
         sql = sql + attributes_str
-
         #Creating a database
         cursor.execute(sql)
+
 
     def save(self, *args, **kwargs):
         print(self.__dict__)
@@ -154,8 +155,9 @@ class Model(metaclass=ModelBase):
         values = ""
         print("*************")
         for key, field_obj in self.attributes.items():
-            print(field_obj.value)
-            #value = "'%s'"%value
+            print(key, "  " , field_obj)
+            #print(field_obj.value)
+            # val = "'%s'"%value
             attributes += key + ", "
             val = "'%s'"%field_obj.value
             values += str(val) + ", "

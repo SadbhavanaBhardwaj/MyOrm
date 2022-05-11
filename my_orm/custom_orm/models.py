@@ -2,10 +2,11 @@ import datetime
 from custom_orm.helper import orm_db, orm
 # from django.db import models
 
-from custom_orm.helper import orm
+from django.db import models
 
 # Create your models here.
 
+print("modelys.py.............................")
 
 class Author(orm.Model):
     table_name = "author"
@@ -18,7 +19,8 @@ print(type)
 
 Author.create_table(mydb)
 
-author = Author(name="sadbhavana", age=24, email="sadbhavana@gmail.com")
+author = Author(name="sadbhavana", age=24, em9ail="sadbhavana@gmail.com")
+print("author::::::::::", author)
 #print(author.__dict__)
 author.save()
 
