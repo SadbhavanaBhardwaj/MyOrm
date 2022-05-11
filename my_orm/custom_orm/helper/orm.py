@@ -43,16 +43,18 @@ class IntegerField(OrmFields):
 
 class CharField(OrmFields):
     
+    validator_dict = dict()
     def __init__(self, val=None, max_length=None):
-        self.max_length = max_length
         self.value = self.validate(val, max_length)
         self.max_length = max_length
 
     def validate(self, val, max_len):
         if val == None:
             pass
-        elif val != None and (not isinstance(val, str) or not isinstance(val, str or len(val) > max_len)):
+        elif not isinstance(val, str):
             raise ValidationError("value should be character")
+        elif len(val) > max_len:
+            raise ValidationError("length should be less than or equal to {len}".format(len=max_len))
         return val
 
 class EmailField(OrmFields):
@@ -67,9 +69,6 @@ class EmailField(OrmFields):
             raise ValidationError("value should be email")
         return val
  
-
-
-
 
 
 
@@ -100,12 +99,15 @@ class Model(metaclass=ModelBase):
     class_attributes = {}
     def __init__(self, *args, **kwargs):
         self.attributes = dict()
+        
         for key, val in self.class_attributes.items():
             if key in kwargs:
-                var_value = val(kwargs[key], )
+                if val[0] == CharField:
+                    var_value = val[0](kwargs[key], val[1])
+                else:
+                    var_value = val[0](kwargs[key])
                 self.attributes[key] = var_value
                 kwargs.pop(key)
-        print(self.attributes)
 
         #checking if incorrect field names are entered by the user
         if len(kwargs)>0:
@@ -134,8 +136,9 @@ class Model(metaclass=ModelBase):
         cls.cursor = cursor
         attributes_str = " id SERIAL PRIMARY KEY, "
         for key, val in cls.__dict__.items():
-            cls.class_attributes[key] = type(val)
+            cls.class_attributes[key] = (type(val), )
             if isinstance(val, CharField):
+                cls.class_attributes[key] = (type(val), val.max_length)
                 attributes_str += (key + " varchar ({len}), ".format(len=val.max_length))
             if isinstance(val, IntegerField):
                 attributes_str += key + " int, "
@@ -150,14 +153,9 @@ class Model(metaclass=ModelBase):
 
 
     def save(self, *args, **kwargs):
-        print(self.__dict__)
         attributes = "("
         values = ""
-        print("*************")
         for key, field_obj in self.attributes.items():
-            print(key, "  " , field_obj)
-            #print(field_obj.value)
-            # val = "'%s'"%value
             attributes += key + ", "
             val = "'%s'"%field_obj.value
             values += str(val) + ", "

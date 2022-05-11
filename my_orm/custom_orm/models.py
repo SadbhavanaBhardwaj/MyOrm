@@ -6,8 +6,6 @@ from django.db import models
 
 # Create your models here.
 
-print("modelys.py.............................")
-
 class Author(orm.Model):
     table_name = "author"
     name = orm.CharField(max_length=87)
@@ -19,11 +17,10 @@ print(type)
 
 Author.create_table(mydb)
 
-author = Author(name="sadbhavana", age=24, em9ail="sadbhavana@gmail.com")
+author = Author(name="ishoo", age=34, email="ishoo@gmail.com")
 print("author::::::::::", author)
 #print(author.__dict__)
 author.save()
-
 
 # author = Author.filter(name="sadbhavana")
 # #assert author[0] == ('sadbhavana', 25, datetime.datetime(2022, 5, 8, 23, 35, 16, 411355))
