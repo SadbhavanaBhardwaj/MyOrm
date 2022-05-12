@@ -1,3 +1,5 @@
+import email
+from traceback import print_tb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -12,20 +14,21 @@ class CreateNewOrm(APIView):
         
 
         mydb = orm_db.get_connection_cursor("my_db")
-        print(type)
 
         Author.create_table(mydb)
-
-        author = Author(name="sadbhavana", age=25, email="sadbhavana@gmail.com")
+        author = Author(name="sadbhavana", age=25, email="ishoo@gmail.com")
+        print(type(author))
         print("author::::::::::", author)
-        #print(author.__dict__)
-        #author.save()
+        
 
         author = Author.filter(name="sadbhavana")
-        # #assert author[0] == ('sadbhavana', 25, datetime.datetime(2022, 5, 8, 23, 35, 16, 411355))
-        a = next(author())
-        print(a.df)
-        # auth = author
-        # print(auth.df)
-        print(a.obj_filter(name="sadbhavana",age=34))
+        a = author()
+        s = a.obj_filter(email="sadbhavana@gmail.com")
+        a = s.objs[0]
+        a.attributes['email'] = orm.EmailField("sharda@gmail.com")
+        
+        a.save()
+        
+        
+        
         return Response("doing well")

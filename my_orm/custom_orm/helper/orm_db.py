@@ -11,7 +11,7 @@ def create_db(name):
         conn.autocommit = True
 
         #Creating a cursor object using the cursor() method
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
         try:
                 

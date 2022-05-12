@@ -1,13 +1,13 @@
 from abc import ABCMeta, abstractmethod
+import json
 from django.db import models
-from typing import Any
+from typing import Any, OrderedDict
 import django
 from django.forms import ValidationError
 from numpy import char
 from pandas import DataFrame
 from custom_orm.helper import orm_db
 import re
-
 
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
@@ -76,40 +76,55 @@ class ModelBase(type): ...
     
 
 class QuerySet:
-    def __init__(self, df, cls):
-        self.df = df
-        self.cls = cls
+    def __init__(self, ls):
+        self.objs = ls
         self.i = 0
-    def __iter__(self):
-        return self
+    # def __iter__(self):
+    #     return self
 
-    def __next__(self):
-        if self.i > 0:
-            raise StopIteration()
-        self.i += 1
-        return self
+    # def __next__(self):
+    #     if self.i > 0:
+    #         raise StopIteration()
+    #     self.i += 1
+    #     return self
 
     def obj_filter(self, **kwargs):
         #filtered_query = self.df['age']==25
         # filtered_query = filtered_query.reset_index(drop=True)
         # print(type(filtered_query))
-        query_string= ""
-        for key, val in kwargs.items():
-            if type(val) == str:
-                query_string += key+"=='"+val+"' and "
-            else:
-                query_string += key+"=="+str(val) + " and "
-        query_string += "True"
-        df2 = self.df.query(query_string)
-        return df2
+        filtered_obs = []
+        for obj in self.objs:
+            for key, val in kwargs.items():
+                if obj.attributes[key].value == val:
+                    filtered_obs.append(obj)
+        return QuerySet(filtered_obs)
+        # query_string= ""
+        # for key, val in kwargs.items():
+        #     if type(val) == str:
+        #         query_string += key+"=='"+val+"' and "
+        #     else:
+        #         query_string += key+"=="+str(val) + " and "
+        # query_string += "True"
+        # self.df = self.df.query(query_string)
+        return self
+
+    def save(self, **kwargs):
+        pass
+
+    
 
 class Model(metaclass=ModelBase):
 
     #class_attributes: to store all the Field types that belong to the base class(Model)
-    class_attributes = {}
+    class_attributes = OrderedDict()
     table_name = ""
     def __init__(self, *args, **kwargs):
         self.attributes = dict()
+        self.data_list = []
+        if type(args) == tuple and len(args)>0:
+            kwargs = args[0]
+            self.attributes["id"] = IntegerField(kwargs.pop(id))
+        
         #for every field that belongs to the class,if it is present in the kwargs(while creating objects),
         #  then initialize that FieldType
         for key, val in self.class_attributes.items():
@@ -120,7 +135,6 @@ class Model(metaclass=ModelBase):
                     var_value = val[0](kwargs[key])
                 self.attributes[key] = var_value
                 kwargs.pop(key)
-
         #checking if incorrect field names are entered by the user
         if len(kwargs)>0:
             error_string = ""
@@ -144,7 +158,8 @@ class Model(metaclass=ModelBase):
         cls.cursor = cursor
         attributes_str = " id SERIAL PRIMARY KEY, "
         for key, val in cls.__dict__.items():
-            cls.class_attributes[key] = (type(val), )
+            if isinstance(val, CharField) or isinstance(val, EmailField) or isinstance(val, IntegerField):
+                cls.class_attributes[key] = (type(val), )
             if isinstance(val, CharField):
                 cls.class_attributes[key] = (type(val), val.max_length)
                 attributes_str += (key + " varchar ({len}), ".format(len=val.max_length))
@@ -166,15 +181,27 @@ class Model(metaclass=ModelBase):
     def save(self, *args, **kwargs):
         attributes = "("
         values = ""
+        print(self.attributes)
+        update_string = ""
+        
         for key, field_obj in self.attributes.items():
             attributes += key + ", "
             val = "'%s'"%field_obj.value
             values += str(val) + ", "
+            if "id" in self.attributes.keys():
+                update_string += "{att}={val1}, ".format(att=key,val1=val)
+        if "id" in self.attributes.keys():
+            update_string = "on conflict (id) do UPDATE SET " + update_string
+        update_string = update_string[:-1]
+        print(update_string)
         attributes = attributes[:-2]
         values = values[:-2]
         attributes += ") values (" + values + ")"
+        print(attributes)
+        print(values)
         insert_sql = "INSERT INTO {table} ".format(table=self.__class__.table_name)
-        insert_sql +=  attributes 
+        insert_sql +=  attributes  + update_string
+        insert_sql = insert_sql[:-1]
         print(insert_sql)
         self.cursor.execute(insert_sql)
 
@@ -194,16 +221,36 @@ class Model(metaclass=ModelBase):
             objs = []
             # klass = globals()[cls.__name__]
             # instance = klass()
-            
+            print("====")
             fields_names = [i[0] for i in cls.cursor.description]
             data = [dict(zip(fields_names, row))  for row in ans]
+            import inspect
+            a = cls.mro()
+            a = a[0]
+            class_objs = []
+            print(ans)
+            for tuple in ans:
+                obj_dict = dict()
+                i = 1
+                obj_dict[id] = tuple[0]
+                for key in cls.class_attributes.keys():
+                    obj_dict[key] = tuple[i]
+                    i += 1
+                o = a(obj_dict)
+                class_objs.append(o)  
+              
+            q = QuerySet(class_objs)
+
+            return q
+                
+            
             # for row in data:
             #     a = cls.__new__(cls)
             #     print(a.__init__(row))
             # print(objs)
             df = DataFrame(ans, columns=fields_names)
-            q = QuerySet(df, cls.table_name)
-            return q
+            #q = QuerySet(df, cls.table_name)
+            
         return fetch_records
 
     
