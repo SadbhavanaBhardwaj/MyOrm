@@ -1,3 +1,14 @@
-Django
-psycopg2
-djangorestframework
+Package             Version
+------------------- -------
+asgiref             3.5.1
+Django              4.0.4
+djangorestframework 3.13.1
+numpy               1.22.3
+pandas              1.4.2
+pip                 22.0.4
+psycopg2-binary     2.9.3
+python-dateutil     2.8.2
+pytz                2022.1
+setuptools          60.10.0
+six                 1.16.0
+sqlparse            0.4.2
