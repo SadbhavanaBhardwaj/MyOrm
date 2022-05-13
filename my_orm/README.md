@@ -28,9 +28,13 @@ Save the object in db by calling ```a.save()```. It has an upsert query which wi
 
 Filter the data using ```author = Author.filter(name="sadbhavana")```
     - *field name validation*.
+    
     - *lazy evaluation*. filter() returns an inner function which needs to be called to hit the db.  ```a = author()```. a has all the filtered db records.
+
     - filter() returns Queryset object on which we can call **obj_filter(email="sadbhavana@gmail.com")**. which will return a queryset object
+
     - if you want to access any object call ```s = a.objs[0]```
+
     - *update an object* access the object using ``` a.attributes['email'] = orm.EmailField("sharda@gmail.com") ```. Assign the values of types which have inherited **OrmFields**. and call save() method which will update the data in db.
 
 
