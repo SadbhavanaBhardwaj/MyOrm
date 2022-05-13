@@ -2,9 +2,7 @@ from abc import ABCMeta, abstractmethod
 import json
 from django.db import models
 from typing import Any, OrderedDict
-import django
 from django.forms import ValidationError
-from numpy import char
 from pandas import DataFrame
 from custom_orm.helper import orm_db
 import re
@@ -81,6 +79,7 @@ class QuerySet:
 
     def obj_filter(self, **kwargs):
         filtered_obs = []
+        
         for obj in self.objs:
             for key, val in kwargs.items():
                 if obj.attributes[key].value == val:
@@ -158,26 +157,29 @@ class Model(metaclass=ModelBase):
     def save(self, *args, **kwargs):
         attributes = "("
         values = ""
-        print(self.attributes)
         update_string = ""
-        
+        is_update = False
+        if "id" in self.attributes.keys():
+            is_update = True
         for key, field_obj in self.attributes.items():
             attributes += key + ", "
             val = "'%s'"%field_obj.value
             values += str(val) + ", "
-            if "id" in self.attributes.keys():
+            if is_update:
                 update_string += "{att}={val1}, ".format(att=key,val1=val)
-        if "id" in self.attributes.keys():
+        if is_update:
             update_string = "on conflict (id) do UPDATE SET " + update_string
         update_string = update_string[:-1]
-        print(update_string)
         attributes = attributes[:-2]
         values = values[:-2]
         attributes += ") values (" + values + ")"
-        print(attributes)
-        print(values)
+
         insert_sql = "INSERT INTO {table} ".format(table=self.__class__.table_name)
-        insert_sql +=  attributes  + update_string
+        insert_sql +=  attributes 
+        if is_update:
+            insert_sql += update_string
+        else:
+            insert_sql += ")"
         insert_sql = insert_sql[:-1]
         print(insert_sql)
         self.cursor.execute(insert_sql)

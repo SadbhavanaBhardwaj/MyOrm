@@ -13,18 +13,15 @@ def create_db(name):
         #Creating a cursor object using the cursor() method
         cursor = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-        try:
-                
+        try:   
             #Preparing query to create a database
             sql = "CREATE database {name};".format(name=name)
             #Creating a database
             cursor.execute(sql)
+            print("Database created successfully........")
         except Exception as e:
             print(e)
         
-
-        print("Database created successfully........")
-
         return cursor
     except Exception as e:
         print(e)
