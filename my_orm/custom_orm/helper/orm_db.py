@@ -18,7 +18,6 @@ def create_db(name):
             #Preparing query to create a database
             sql = "CREATE database {name};".format(name=name)
             #Creating a database
-
             cursor.execute(sql)
         except Exception as e:
             print(e)

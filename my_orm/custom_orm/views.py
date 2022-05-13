@@ -13,6 +13,7 @@ class CreateNewOrm(APIView):
     def get(self, request):
         
 
+        orm.create_db("my_db")
         mydb = orm_db.get_connection_cursor("my_db")
 
         Author.create_table(mydb)
@@ -27,8 +28,6 @@ class CreateNewOrm(APIView):
         a = s.objs[0]
         a.attributes['email'] = orm.EmailField("sharda@gmail.com")
         
-        a.save()
-        
-        
-        
+    #    a.save()
+    
         return Response("doing well")

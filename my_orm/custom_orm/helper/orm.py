@@ -10,6 +10,7 @@ from custom_orm.helper import orm_db
 import re
 
 
+# regex for email
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
 
@@ -17,9 +18,8 @@ def create_db(name):
     return orm_db.create_db(name)
 
 
-
+# Model fields
 class OrmFields(metaclass=ABCMeta):
-    
     @abstractmethod
     def validate(self):
         pass
@@ -43,7 +43,6 @@ class IntegerField(OrmFields):
 
 class CharField(OrmFields):
     
-    validator_dict = dict()
     def __init__(self, val=None, max_length=None):
         self.value = self.validate(val, max_length)
         self.max_length = max_length
@@ -78,38 +77,16 @@ class ModelBase(type): ...
 class QuerySet:
     def __init__(self, ls):
         self.objs = ls
-        self.i = 0
-    # def __iter__(self):
-    #     return self
 
-    # def __next__(self):
-    #     if self.i > 0:
-    #         raise StopIteration()
-    #     self.i += 1
-    #     return self
 
     def obj_filter(self, **kwargs):
-        #filtered_query = self.df['age']==25
-        # filtered_query = filtered_query.reset_index(drop=True)
-        # print(type(filtered_query))
         filtered_obs = []
         for obj in self.objs:
             for key, val in kwargs.items():
                 if obj.attributes[key].value == val:
                     filtered_obs.append(obj)
         return QuerySet(filtered_obs)
-        # query_string= ""
-        # for key, val in kwargs.items():
-        #     if type(val) == str:
-        #         query_string += key+"=='"+val+"' and "
-        #     else:
-        #         query_string += key+"=="+str(val) + " and "
-        # query_string += "True"
-        # self.df = self.df.query(query_string)
-        return self
 
-    def save(self, **kwargs):
-        pass
 
     
 
@@ -255,6 +232,4 @@ class Model(metaclass=ModelBase):
 
     
 
-    def update(self, **kwargs):
-        pass
 
