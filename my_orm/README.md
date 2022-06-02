@@ -38,24 +38,3 @@ Filter the data using ```author = Author.filter(name="sadbhavana")```
     - *update an object* access the object using ``` a.attributes['email'] = orm.EmailField("sharda@gmail.com") ```. Assign the values of types which have inherited **OrmFields**. and call save() method which will update the data in db.
 
 
-
-
-# as per reuirements:
-### Your simple ORM should be able to
-
-- Create DB tables based on class definitions: **Done**
-- Create table rows by instantiating a class and calling `save` method: **Done**
-- Filter (SELECT) data based on exact matching: **Done**
-- Update existing rows: **Done**
-- Prevent users from entering wrong field names: **Done**
-- Handle at least 3 field types including CharField and IntegerField: **Done**
-
-### You will get extra points if your ORM can
-
-- Validate field types: **Done**
-- Filter the result of an already filtered data: **Done**
-- Support lazy query evaluation (refer to the example below): **Done**
-- Handle foreign keys. (Relational DB): **Not Done**
-- Automatically detects schema changes (migrations): **Not Done**
-- Be used across multiple threads without causing unnecessary blocking: **Not Done**
-    - If your choice of language is Golang, use `select`# SadbhavanaBhardwaj__backend
